@@ -33,6 +33,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * A controller to handle web requests to manage {@link GuestbookEntry}s
@@ -129,6 +131,21 @@ class GuestbookController {
 		model.addAttribute("index", guestbook.count());
 
 		return "guestbook :: entry";
+	}
+
+	@PutMapping("/guestbook/{id}")
+	String moderateComment(@RequestBody GuestbookEntry moderatedComment, @PathVariable Long id) {
+  
+	    guestbook.findById(id)
+			.map(comment -> {
+				comment.setText(moderatedComment.getText());
+				return guestbook.save(comment);
+			})
+			.orElseGet(() -> {
+				moderatedComment.setId(id);
+				return guestbook.save(moderatedComment);
+		});
+		return "redirect:/guestbook";
 	}
 
 	/**
